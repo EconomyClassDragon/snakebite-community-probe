@@ -1,0 +1,1 @@
+{"ts":"2026-02-02T14:31:27","model":"demo","file":"missing_colon.py","sha256":"4338092b07976135b819b3af2b38ffae399a99fa37170f01f8a4855c1b06fad7","syntax_valid_before":false,"syntax_valid_after":false,"error_before":"SyntaxError: expected ':'","error_after":"SyntaxError: expected ':'","fix_count":2}

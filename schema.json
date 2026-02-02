@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SnakebiteResultRow",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "ts",
+    "model",
+    "file",
+    "sha256",
+    "syntax_valid_before",
+    "syntax_valid_after",
+    "fix_count"
+  ],
+  "properties": {
+    "ts": { "type": "string" },
+    "model": { "type": "string", "minLength": 1 },
+    "file": { "type": "string" },
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "syntax_valid_before": { "type": "boolean" },
+    "syntax_valid_after": { "type": "boolean" },
+    "error_before": { "type": "string" },
+    "error_after": { "type": "string" },
+    "fixes_attempted": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "detail", "line"],
+        "properties": {
+          "kind": { "type": "string" },
+          "detail": { "type": "string" },
+          "line": { "type": "integer" }
+        }
+      }
+    },
+    "fix_count": { "type": "integer", "minimum": 0 },
+    "error": { "type": "string" }
+  }
+}
