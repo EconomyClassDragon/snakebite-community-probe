@@ -1,0 +1,52 @@
+name: aggregate
+
+on:
+  push:
+    paths:
+      - 'results/**'
+      - 'scripts/**'
+      - 'schema.json'
+  schedule:
+    - cron: '17 3 * * *' # daily 03:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate
+        run: python3 scripts/validate.py results
+      - name: Aggregate
+        run: python3 scripts/aggregate.py
+      - name: Commit public outputs
+        run: |
+          git config user.name "snakebite-bot"
+          git config user.email "snakebite-bot@users.noreply.github.com"
+          git add public/summary.md public/summary.json public/index.html
+          git diff --cached --quiet || git commit -m "Update public summary"
+          git push
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

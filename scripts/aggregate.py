@@ -114,7 +114,68 @@ def main() -> int:
     (PUBLIC / "summary.json").write_text(json.dumps(summary, indent=2, ensure_ascii=False, default=lambda o: dict(o)), encoding="utf-8")
     (PUBLIC / "summary.md").write_text("\n".join(md_lines) + "\n", encoding="utf-8")
 
-    print(f"wrote public/summary.md and public/summary.json ({len(rows)} rows)")
+    # Tiny static HTML page for humans (GitHub Pages friendly).
+    rows_html = []
+    for model, stats in summary["models"].items():
+        rows_html.append(
+            f"<tr><td><code>{model}</code></td>"
+            f"<td style='text-align:right'>{stats['rows']}</td>"
+            f"<td style='text-align:right'>{pct(int(stats['syntaxValidBefore']), int(stats['rows'])):.1f}%</td>"
+            f"<td style='text-align:right'>{pct(int(stats['syntaxValidAfter']), int(stats['rows'])):.1f}%</td>"
+            f"<td style='text-align:right'>{pct(int(stats['repaired']), int(stats['rows'])):.1f}%</td>"
+            f"<td style='text-align:right'>{stats['avgFixCount']:.2f}</td></tr>"
+        )
+
+    index_html = f"""<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\" />
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+  <title>Snakebite community probe</title>
+  <style>
+    body {{ font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; max-width: 980px; margin: 32px auto; padding: 0 16px; }}
+    table {{ border-collapse: collapse; width: 100%; }}
+    th, td {{ border-bottom: 1px solid #ddd; padding: 8px; vertical-align: top; }}
+    th {{ text-align: left; background: #f6f6f6; }}
+    code {{ background: #f3f3f3; padding: 1px 4px; border-radius: 4px; }}
+    .muted {{ color: #666; }}
+  </style>
+</head>
+<body>
+  <h1>Snakebite community probe</h1>
+  <p class=\"muted\">Generated: {summary['generatedAt']} · Total rows: <b>{summary['totalRows']}</b></p>
+
+  <p>
+    <a href=\"summary.md\">summary.md</a> ·
+    <a href=\"summary.json\">summary.json</a>
+  </p>
+
+  <h2>Per-model stats</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th style=\"text-align:right\">Rows</th>
+        <th style=\"text-align:right\">Syntax valid (before)</th>
+        <th style=\"text-align:right\">Syntax valid (after)</th>
+        <th style=\"text-align:right\">Repaired (before→after)</th>
+        <th style=\"text-align:right\">Avg fix count</th>
+      </tr>
+    </thead>
+    <tbody>
+      {''.join(rows_html) if rows_html else '<tr><td colspan="6" class="muted">No data yet.</td></tr>'}
+    </tbody>
+  </table>
+
+  <h2>How to contribute</h2>
+  <p>See <code>README.md</code> and <code>CONTRIBUTING.md</code> in the repo.</p>
+</body>
+</html>
+"""
+
+    (PUBLIC / "index.html").write_text(index_html, encoding="utf-8")
+
+    print(f"wrote public/index.html, summary.md, summary.json ({len(rows)} rows)")
     return 0
 
 
