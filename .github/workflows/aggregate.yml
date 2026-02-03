@@ -28,13 +28,19 @@ jobs:
         run: python3 scripts/validate.py results
       - name: Aggregate
         run: python3 scripts/aggregate.py
-      - name: Commit public outputs
+      - name: Commit public outputs (best-effort)
         run: |
+          set -e
           git config user.name "snakebite-bot"
           git config user.email "snakebite-bot@users.noreply.github.com"
           git add public/summary.md public/summary.json public/index.html
-          git diff --cached --quiet || git commit -m "Update public summary"
-          git push
+
+          if git diff --cached --quiet; then
+            echo "No public output changes to commit."
+          else
+            git commit -m "Update public summary"
+            git push
+          fi
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
